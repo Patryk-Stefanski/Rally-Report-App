@@ -27,19 +27,19 @@ class CarView {
         return option
     }
 
-    fun addCarData(carModel : CarModel) : Boolean {
+    fun addCarData(car : CarModel) : Boolean {
 
         println()
         print("Enter car Number : ")
-        carModel.carNo = readLine()!!.toInt()
+        car.carNo = readLine()!!.toInt()
 
         print("Enter Driver Name : ")
-        carModel.driverName = readLine()!!
+        car.driverName = readLine()!!
 
         print("Enter Navigator Name : ")
-        carModel.navigatorName = readLine()!!
+        car.navigatorName = readLine()!!
 
-        return carModel.carNo.toUInt() != null && carModel.driverName.isNotEmpty() && carModel.navigatorName.isNotEmpty()
+        return car.carNo.toUInt() != null && car.driverName.isNotEmpty() && car.navigatorName.isNotEmpty()
     }
 
     fun updateCarData(car : CarModel) : Boolean {

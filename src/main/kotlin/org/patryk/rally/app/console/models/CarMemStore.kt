@@ -3,10 +3,10 @@ package org.patryk.rally.app.console.models
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
-var lastId = 0L
+var lastCarId = 0L
 
-internal fun getId(): Long {
-    return lastId++
+internal fun getCarId(): Long {
+    return lastCarId++
 }
 
 class CarMemStore : CarStore {
@@ -18,18 +18,18 @@ class CarMemStore : CarStore {
     }
 
     override fun findOne(id: Long) : CarModel? {
-        var foundCar: CarModel? = cars.find { p -> p.carId == id }
+        var foundCar: CarModel? = cars.find { p -> p.id == id }
         return foundCar
     }
 
     override fun create(car: CarModel) {
-        car.carId = getId()
+        car.id = getCarId()
         cars.add(car)
         logAll()
     }
 
     override fun update(car: CarModel) {
-        var foundCar = findOne(car.carId!!)
+        var foundCar = findOne(car.id!!)
         if (foundCar != null) {
             foundCar.carNo = car.carNo
             foundCar.driverName = car.driverName

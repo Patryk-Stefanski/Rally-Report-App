@@ -77,9 +77,9 @@ class CarController {
     }
 
     fun dummyData() {
-        cars.create(CarModel(carId = 0, carNo = 1, driverName = "Josh Moffet", navigatorName = "Andy Hayes"))
-        cars.create(CarModel(carId = 1, carNo = 2, driverName = "Craig Breen", navigatorName = "Paul Nagle"))
-        cars.create(CarModel(carId = 2, carNo = 3, driverName = "James Stafford", navigatorName = "Thomas Scallan"))
+        cars.create(CarModel(id = 0, carNo = 1, driverName = "Josh Moffet", navigatorName = "Andy Hayes"))
+        cars.create(CarModel(id = 1, carNo = 2, driverName = "Craig Breen", navigatorName = "Paul Nagle"))
+        cars.create(CarModel(id = 2, carNo = 3, driverName = "James Stafford", navigatorName = "Thomas Scallan"))
     }
 
     fun returnMainMenu() {
