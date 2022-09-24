@@ -1,4 +1,4 @@
-package org.patryk.rally.app
+package org.patryk.rally.app.console.main
 
 import  mu.KotlinLogging
 
