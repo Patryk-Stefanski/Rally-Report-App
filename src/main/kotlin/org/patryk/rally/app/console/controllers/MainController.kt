@@ -22,7 +22,7 @@ class MainController {
             input = mainView.mainMenu()
             when(input) {
                 1 -> println("TO DO LOGIN")
-                2 -> println("TO DO USER REGISTRATION")
+                2 -> userMenu()
                 3 -> println("TO DO POSTS")
                 4 -> locationMenu()
                 5 -> carMenu()
@@ -40,6 +40,10 @@ class MainController {
 
     fun locationMenu(){
         LocationController().start()
+    }
+
+    fun userMenu(){
+        UserController().start()
     }
 
 

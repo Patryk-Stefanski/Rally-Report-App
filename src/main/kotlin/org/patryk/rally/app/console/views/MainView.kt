@@ -9,7 +9,7 @@ class MainView {
 
         println("MAIN MENU")
         println(" 1. Login")
-        println(" 2. Register User")
+        println(" 2. Manage Users")
         println(" 3. Posts")
         println(" 4. Manage Locations (Admin)")
         println(" 5. Manage Cars (Admin)")
@@ -47,6 +47,5 @@ class MainView {
         }
 
     }
-
 
 }

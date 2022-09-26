@@ -2,5 +2,5 @@ package org.patryk.rally.app.console.models
 
 import java.util.UUID
 
-class UserModel(var uid:UUID, var username:String, var password:String, var admin:Boolean) {
+data class UserModel(var uid:UUID = UUID.randomUUID(), var username:String = "", var password:String = "", var admin:Boolean = false) {
 }
