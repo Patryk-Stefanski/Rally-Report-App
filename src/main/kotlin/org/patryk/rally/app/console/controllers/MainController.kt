@@ -23,7 +23,7 @@ class MainController {
             when(input) {
                 1 -> println("TO DO LOGIN")
                 2 -> userMenu()
-                3 -> println("TO DO POSTS")
+                3 -> postMenu()
                 4 -> locationMenu()
                 5 -> carMenu()
                 -1 -> println("Exiting App")
@@ -44,6 +44,10 @@ class MainController {
 
     fun userMenu(){
         UserController().start()
+    }
+
+    fun postMenu(){
+        PostController().start()
     }
 
 
