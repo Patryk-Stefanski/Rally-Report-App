@@ -2,12 +2,13 @@ package org.patryk.rally.app.console.controllers
 
 import mu.KotlinLogging
 import org.patryk.rally.app.console.models.CarModel
-import org.patryk.rally.app.console.models.CarMemStore
 import org.patryk.rally.app.console.views.CarView
+import java.sql.*
+import java.util.*
 
 
 class CarController {
-    val cars = CarMemStore()
+    val db  = DataBaseController()
     val carView = CarView()
     val logger = KotlinLogging.logger {}
 
@@ -26,8 +27,9 @@ class CarController {
                 2 -> update()
                 3 -> list()
                 4 -> search()
+                5 -> delete()
                 0 -> returnMainMenu()
-                -99 -> dummyData()
+                //-99 -> dummyData()
                 -1 -> println("Exiting App")
                 else -> println("Invalid Option")
             }
@@ -36,50 +38,207 @@ class CarController {
         logger.info { "Shutting Down Rally Report Console App" }
     }
 
-    fun add() {
-        val aCar = CarModel()
+    fun add() : Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-        if (carView.addCarData(aCar))
-            cars.create(aCar)
-        else
-            logger.info("Car Not Added")
+        val car = CarModel()
+
+
+        if (!carView.addCarData(car)){
+            false
+        }
+
+        car.uid = UUID.randomUUID().toString()
+
+        //Add error checking
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("INSERT INTO Cars (uid,carNo,driverName,navigatorName) VALUES('${car.uid}','${car.carNo}','${car.driverName}','${car.navigatorName}') ")
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
     fun list() {
-        carView.listCars(cars)
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs : ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Cars`")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    println("UID : " + rs.getString("uid"))
+                    println("CarNo : " + rs.getInt("carNo"))
+                    println("Driver Name : " + rs.getString("driverName"))
+                    println("Navigator Name : " + rs.getString("navigatorName"))
+                    println("-----------------------------------------------")
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+        }
     }
 
-    fun update() {
+    fun update() : Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var car = CarModel()
 
-        carView.listCars(cars)
-        val searchId = carView.getId()
-        val aCar = search(searchId)
+        list()
 
-        if (aCar != null) {
-            if (carView.updateCarData(aCar)) {
-                cars.update(aCar)
-                carView.showCar(aCar)
-                logger.info("Car Updated : [ $aCar ]")
-            } else
-                logger.info("Car Not Updated")
-        } else
-            println("Car Not Updated...")
+        if (!carView.updateCarData(car)){
+            return false
+        }
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("UPDATE Cars SET  driverName = '${car.driverName}', navigatorName = '${car.navigatorName}', carNo = '${car.carNo}'  WHERE uid = '${car.uid}'")
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+        }
+        return false
     }
+
 
     fun search() {
-        val aCar = search(carView.getId())!!
-        carView.showCar(aCar)
+        var carView = CarView()
+        var query : String = ""
+        query = carView.searchBy()
+
+        //Update for use with SQL
+
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs : ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery(query)
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    println("UID : " + rs.getString("uid"))
+                    println("CarNo : " + rs.getInt("carNo"))
+                    println("Driver Name : " + rs.getString("driverName"))
+                    println("Navigator Name : " + rs.getString("navigatorName"))
+                    println("-----------------------------------------------")
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+        }
     }
 
-    fun search(id: Long): CarModel? {
-        val foundCar = cars.findOne(id)
-        return foundCar
-    }
+    fun delete()  {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-    fun dummyData() {
-        cars.create(CarModel(id = 0, carNo = 1, driverName = "Josh Moffet", navigatorName = "Andy Hayes"))
-        cars.create(CarModel(id = 1, carNo = 2, driverName = "Craig Breen", navigatorName = "Paul Nagle"))
-        cars.create(CarModel(id = 2, carNo = 3, driverName = "James Stafford", navigatorName = "Thomas Scallan"))
+        var car = CarModel()
+
+        list()
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (carView.deleteCarData(car)) {
+                stmt!!.executeUpdate("DELETE FROM `Cars` WHERE uid = '${car.uid}'")
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (sqlEx: SQLException) {
+                }
+            }
+        }
     }
 
     fun returnMainMenu() {

@@ -18,11 +18,11 @@ class PostController {
         do {
             input = postView.PostMenu()
             when (input) {
-                1 -> add()
-                2 -> update()
-                3 -> list()
-                4 -> search()
-                0 -> returnMainMenu()
+//                1 -> add()
+//                2 -> update()
+//                3 -> list()
+//                4 -> search()
+//                0 -> returnMainMenu()
                 -1 -> println("Exiting App")
                 else -> println("Invalid Option")
             }
@@ -31,49 +31,49 @@ class PostController {
         logger.info { "Shutting Down Rally Report Console App" }
     }
 
-    fun add() {
-        val post = PostModel()
-
-        if (postView.addPostData(post))
-            posts.create(post)
-        else
-            logger.info("Post Not Added")
-    }
-
-    fun list() {
-        postView.listPosts(posts)
-    }
-
-    fun update() {
-
-        postView.listPosts(posts)
-        val searchId = postView.getId()
-        val post = search(searchId)
-
-        if (post != null) {
-            if (postView.updatePostData(post)) {
-                posts.update(post)
-                postView.showPost(post)
-                logger.info("Post Updated : [ $post ]")
-            } else
-                logger.info("Post Not Updated")
-        } else
-            println("Post Not Updated...")
-    }
-
-    fun search() {
-        val post = search(postView.getId())!!
-        postView.showPost(post)
-    }
-
-    fun search(id: Long): PostModel? {
-        val foundPost = posts.findOne(id)
-        return foundPost
-    }
-
-
-    fun returnMainMenu() {
-        MainController().start()
-    }
+//    fun add() {
+//        val post = PostModel()
+//
+//        if (postView.addPostData(post))
+//            posts.create(post)
+//        else
+//            logger.info("Post Not Added")
+//    }
+//
+//    fun list() {
+//        postView.listPosts(posts)
+//    }
+//
+//    fun update() {
+//
+//        postView.listPosts(posts)
+//        val searchId = postView.getId()
+//        val post = search(searchId)
+//
+//        if (post != null) {
+//            if (postView.updatePostData(post)) {
+//                posts.update(post)
+//                postView.showPost(post)
+//                logger.info("Post Updated : [ $post ]")
+//            } else
+//                logger.info("Post Not Updated")
+//        } else
+//            println("Post Not Updated...")
+//    }
+//
+//    fun search() {
+//        val post = search(postView.getId())!!
+//        postView.showPost(post)
+//    }
+//
+//    fun search(id: Long): PostModel? {
+//        val foundPost = posts.findOne(id)
+//        return foundPost
+//    }
+//
+//
+//    fun returnMainMenu() {
+//        MainController().start()
+//    }
 
 }
