@@ -25,7 +25,6 @@ class MainController {
                 2 -> userMenu()
                 3 -> postMenu()
                 4 -> locationMenu()
-                5 -> carMenu()
                 -1 -> println("Exiting App")
                 else -> println("Invalid Option")
             }
@@ -34,9 +33,6 @@ class MainController {
         logger.info { "Shutting Down Rally Report Console App" }
     }
 
-    fun carMenu(){
-        CarController().start()
-    }
 
     fun locationMenu(){
         LocationController().start()

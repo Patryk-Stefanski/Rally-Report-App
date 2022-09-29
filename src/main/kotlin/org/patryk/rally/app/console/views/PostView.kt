@@ -1,12 +1,7 @@
 package org.patryk.rally.app.console.views
 
-import org.patryk.rally.app.console.models.*
-
 
 class PostView {
-    val carView = CarView()
-    val locationsView = LocationsView()
-    val locations = LocationMemStore()
 
 
     fun PostMenu() : Int {

@@ -2,7 +2,6 @@ package org.patryk.rally.app.console.controllers
 
 import mu.KotlinLogging
 import org.patryk.rally.app.console.models.*
-import org.patryk.rally.app.console.views.CarView
 import org.patryk.rally.app.console.views.LocationsView
 import org.patryk.rally.app.console.views.PostView
 
