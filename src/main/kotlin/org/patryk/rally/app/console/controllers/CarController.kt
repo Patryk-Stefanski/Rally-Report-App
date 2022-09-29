@@ -77,11 +77,10 @@ class CarController : Controller() {
             }
             if (rs != null) {
                 while (rs.next()) {
-                    carList = carList + "UID : " + rs.getString("uid") + "\n" + "CarNo : " + rs.getString("carNo") + "\n" + "Driver Name : " + rs.getString("driverName") + "\n"+ "Navigator Name : " + rs.getString("navigatorName") + "\n"+ "------------------------------------------" + "\n"
+                    carList += "UID : " + rs.getString("uid") + "\n" + "CarNo : " + rs.getString("carNo") + "\n" + "Driver Name : " + rs.getString("driverName") + "\n"+ "Navigator Name : " + rs.getString("navigatorName") + "\n"+ "------------------------------------------" + "\n"
                 }
             }
         } catch (ex: SQLException) {
-            // handle any errors
             ex.printStackTrace()
         } finally {
             if (stmt != null) {

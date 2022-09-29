@@ -24,7 +24,7 @@ class MainController {
                 1 -> println("TO DO LOGIN")
                 2 -> userMenu()
                 3 -> postMenu()
-                4 -> locationMenu()
+             //   4 -> locationMenu()
                 -1 -> println("Exiting App")
                 else -> println("Invalid Option")
             }
@@ -34,9 +34,6 @@ class MainController {
     }
 
 
-    fun locationMenu(){
-        LocationController().start()
-    }
 
     fun userMenu(){
         UserController().start()

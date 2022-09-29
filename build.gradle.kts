@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.lang.Runtime.version
 
 plugins {
     kotlin("jvm") version "1.7.10"
@@ -23,7 +22,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.slf4j:slf4j-simple:1.7.36")
-    implementation ("io.github.microutils:kotlin-logging:2.1.23")
+    implementation("io.github.microutils:kotlin-logging:2.1.23")
     implementation("no.tornado:tornadofx:1.7.20")
     implementation("mysql:mysql-connector-java:8.0.30")
 }
