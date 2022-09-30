@@ -1,91 +1,196 @@
 package org.patryk.rally.app.console.controllers
 
 import mu.KotlinLogging
-import org.patryk.rally.app.console.models.UserMemStore
 import org.patryk.rally.app.console.models.UserModel
-import org.patryk.rally.app.console.views.UserManagementView
-import java.util.*
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Statement
 
 class UserController {
-    val users = UserMemStore()
-    val logger = KotlinLogging.logger {}
-    val userManagementView = UserManagementView()
+    private val logger = KotlinLogging.logger {}
+    private val db = DataBaseController()
 
     init {
         logger.info { "Switching to User Management Menu" }
     }
 
-    fun start() {
+    companion object {
+        var thisUser: UserModel = UserModel("", "", 1)
+    }
 
-        var input: Int
+    fun login(user: UserModel): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+        var validated = false
 
-        do {
-            input = userManagementView.userMenu()
-            when (input) {
-                1 -> add()
-                2 -> update()
-                3 -> list()
-                4 -> search()
-                0 -> returnMainMenu()
-                -99 -> dummyData()
-                -1 -> println("Exiting App")
-                else -> println("Invalid Option")
+        if (user.username.isEmpty()) {
+            throw IllegalArgumentException("Username field is empty")
+        }
+
+        if (user.password.isEmpty()) {
+            throw IllegalArgumentException("Password field is empty")
+        }
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
             }
-            println()
-        } while (input != -1)
-        logger.info { "Shutting Down Rally Report Console App" }
+            if (stmt != null) {
+                stmt.executeQuery("SELECT * FROM Users where `username` = '${user.username}'")
+                rs = stmt.resultSet
+            }
+            if (rs != null && rs.next()) {
+                if (rs.getString("password") == user.password) {
+                    validated = true
+
+                    thisUser.username = user.username
+                    thisUser.password = user.password
+                    thisUser.admin = rs.getInt("admin")
+                }
+            }
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return validated
+    }
+
+    fun add(user: UserModel): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+
+        if (user.username.isEmpty()) {
+            throw IllegalArgumentException("Username field is empty")
+        }
+
+        if (user.password.isEmpty()) {
+            throw IllegalArgumentException("Password field is empty")
+        }
+
+        if (user.password == "NoMatch") {
+            throw IllegalArgumentException("Passwords don't match")
+        }
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("INSERT INTO Users (username,password,admin) VALUES('${user.username}','${user.password}','${user.admin}')")
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
 
-    fun add() {
-        val user = UserModel()
+    fun update(user: UserModel): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-        if (userManagementView.registerUser(user))
-            users.create(user)
-        else
-            logger.info("User Not Registered")
+        if (user.password.isEmpty()) {
+            throw IllegalArgumentException("Password field is empty")
+        }
+
+        if (user.password == "NoMatch") {
+            throw IllegalArgumentException("Passwords don't match")
+        }
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("UPDATE Users SET password = '${user.password}' where username = '${user.username}'")
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        thisUser.password = user.password
+        return true
     }
 
-    fun list() {
-        userManagementView.listUsers(users)
+    fun delete(user: UserModel): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+
+        if (user.password.isEmpty()) {
+            throw IllegalArgumentException("Password field is empty")
+        }
+
+        if (user.password == "NoMatch") {
+            throw IllegalArgumentException("Passwords don't match")
+        }
+
+        if (user.password != thisUser.password) {
+            println("pasword is incorect")
+            return false
+        }
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("DELETE FROM `Users` WHERE username = '${user.username}'")
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
-    fun update() {
-
-        userManagementView.listUsers(users)
-        val searchId = userManagementView.getId()
-        val user = search(searchId)
-
-        if (user != null) {
-            if (userManagementView.updateUserData(user)) {
-                users.update(user)
-                userManagementView.showUser(user)
-                logger.info("User Updated : [ Username : ${user.username} , UID : ${user.uid} ]")
-            } else
-                logger.info("User Not Updated")
-        } else
-            println("User Not Updated...")
-    }
-
-    fun search() {
-        val user = search(userManagementView.getId())!!
-        userManagementView.showUser(user)
-    }
-
-    fun search(UID: UUID): UserModel? {
-        val foundUser = users.findOne(UID)
-        return foundUser
-    }
-
-    fun dummyData() {
-        users.create(UserModel(uid = UUID.randomUUID(), username = "Root" , password = "root" , admin = true))
-        users.create(UserModel(uid = UUID.randomUUID(), username = "test1" , password = "test1" , admin = false))
-        users.create(UserModel(uid = UUID.randomUUID(), username = "test2" , password = "test2" , admin = false))
-        users.create(UserModel(uid = UUID.randomUUID(), username = "test3" , password = "test3" , admin = false))
-
-    }
-
-    fun returnMainMenu() {
-        MainController().start()
-    }
 }

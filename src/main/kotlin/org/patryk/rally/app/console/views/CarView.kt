@@ -1,5 +1,6 @@
 package org.patryk.rally.app.console.views
 
+import javafx.geometry.Pos
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
@@ -10,22 +11,30 @@ import tornadofx.*
 
 class CarView : View("Car View") {
     private var createCarNo: TextField = TextField()
-    private var createDriverName:TextField = TextField()
-    private var createNavigatorName:TextField = TextField()
-    private var updateCarUID:TextField = TextField()
+    private var createDriverName: TextField = TextField()
+    private var createNavigatorName: TextField = TextField()
+    private var updateCarUID: TextField = TextField()
     private var updateCarNo: TextField = TextField()
-    private var updateDriverName:TextField = TextField()
-    private var updateNavigatorName:TextField = TextField()
-    private var deleteCarUID:TextField = TextField()
-    private var listOfCars:TextArea = TextArea()
+    private var updateDriverName: TextField = TextField()
+    private var updateNavigatorName: TextField = TextField()
+    private var deleteCarUID: TextField = TextField()
+    private var listOfCars: TextArea = TextArea()
 
-    var carController = CarController()
-
-
+    private var carController = CarController()
 
 
     override val root = vbox {
         form {
+            vbox(20, Pos.TOP_RIGHT) {
+                buttonbar {
+                    button("Return to Main Menu") {
+                        action {
+                            find(CarView::class).replaceWith(MainView::class, sizeToScene = true, centerOnScreen = true)
+                        }
+
+                    }
+                }
+            }
             fieldset("List of Cars") {
                 listOfCars = textarea {
                     text = carController.list()

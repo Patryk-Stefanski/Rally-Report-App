@@ -1,13 +1,14 @@
 package org.patryk.rally.app.console.views
 
+import javafx.geometry.Pos
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
 import org.patryk.rally.app.console.controllers.LocationController
-git import org.patryk.rally.app.console.models.LocationModel
+import org.patryk.rally.app.console.models.LocationModel
 import tornadofx.*
 
-class LocationsView : View("Location View"){
+class LocationsView : View("Location View") {
     private var createLocationStage: TextField = TextField()
     private var createLocationCorner: TextField = TextField()
     private var updateLocationUID: TextField = TextField()
@@ -16,11 +17,22 @@ class LocationsView : View("Location View"){
     private var deleteLocationUID: TextField = TextField()
     private var listOfLocations: TextArea = TextArea()
 
-    var locationController = LocationController()
+    private var locationController = LocationController()
 
 
     override val root = vbox {
         form {
+            vbox(20, Pos.TOP_RIGHT) {
+                buttonbar {
+                    button("Return to Main Menu") {
+                        action {
+                            find(LocationsView::class).replaceWith(
+                                MainView::class, sizeToScene = true, centerOnScreen = true
+                            )
+                        }
+                    }
+                }
+            }
             fieldset("List of Locations") {
                 listOfLocations = textarea {
                     text = locationController.list()
@@ -83,7 +95,7 @@ class LocationsView : View("Location View"){
                                 buttonbar {
                                     button("Delete") {
                                         action {
-                                            val newLocationModel = LocationModel(deleteLocationUID.text, "", "",)
+                                            val newLocationModel = LocationModel(deleteLocationUID.text, "", "")
                                             locationController.delete(newLocationModel)
                                             listOfLocations.clear()
                                             listOfLocations.appendText(locationController.list())
