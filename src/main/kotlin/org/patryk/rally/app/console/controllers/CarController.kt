@@ -1,7 +1,9 @@
 package org.patryk.rally.app.console.controllers
 
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import mu.KotlinLogging
-import org.patryk.rally.app.console.models.CarModel
+import org.patryk.rally.app.console.models.Car
 import java.sql.*
 import java.util.*
 
@@ -14,7 +16,7 @@ class CarController {
         logger.info { "Switching to Car Menu" }
     }
 
-    fun add(car: CarModel): Boolean {
+    fun add(car: Car): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -60,8 +62,8 @@ class CarController {
         return true
     }
 
-    fun list(): String {
-        var carList = ""
+    fun list(): ObservableList<String> {
+        var carList: ObservableList<String> = FXCollections.observableArrayList()
         var conn: Connection? = null
         var stmt: Statement? = null
         var rs: ResultSet? = null
@@ -76,9 +78,11 @@ class CarController {
             }
             if (rs != null) {
                 while (rs.next()) {
-                    carList += "UID : " + rs.getString("uid") + "\n" + "CarNo : " + rs.getString("carNo") + "\n" + "Driver Name : " + rs.getString(
-                        "driverName"
-                    ) + "\n" + "Navigator Name : " + rs.getString("navigatorName") + "\n" + "------------------------------------------" + "\n"
+                    carList.add(
+                        "UID : " + rs.getString("uid") + ", CarNo : " + rs.getString("carNo") + ", Driver Name : " + rs.getString(
+                            "driverName"
+                        ) + ", Navigator Name : " + rs.getString("navigatorName") + "\n"
+                    )
                 }
             }
         } catch (ex: SQLException) {
@@ -100,7 +104,7 @@ class CarController {
         return carList
     }
 
-    fun update(car: CarModel): Boolean {
+    fun update(car: Car): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -115,43 +119,41 @@ class CarController {
         }
 
         if (car.driverName.isNotEmpty()) {
-            if (car.driverName.isNotEmpty()) {
-                updateQuery += " driverName = '${car.driverName}' "
-                if (car.navigatorName.isNotEmpty()) {
-                    updateQuery = "$updateQuery,"
-                }
-            }
-
+            updateQuery += " driverName = '${car.driverName}' "
             if (car.navigatorName.isNotEmpty()) {
-                updateQuery += " navigatorName = '${car.navigatorName}' "
+                updateQuery = "$updateQuery,"
             }
+        }
 
-            if (car.uid.isEmpty()) {
-                throw IllegalArgumentException("Cannot update Car details because UID is empty")
-            } else updateQuery += " WHERE uid = '${car.uid}'"
+        if (car.navigatorName.isNotEmpty()) {
+            updateQuery += " navigatorName = '${car.navigatorName}' "
+        }
 
-            try {
-                conn = db.getConnection()
-                if (conn != null) {
-                    stmt = conn.createStatement()
+        if (car.uid.isEmpty()) {
+            throw IllegalArgumentException("Cannot update Car details because UID is empty")
+        } else updateQuery += " WHERE uid = '${car.uid}'"
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate(updateQuery)
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
                 }
-                stmt!!.executeUpdate(updateQuery)
-            } catch (ex: SQLException) {
-                // handle any errors
-                ex.printStackTrace()
-            } finally {
-
-                if (stmt != null) {
-                    try {
-                        stmt.close()
-                    } catch (_: SQLException) {
-                    }
-                }
-                if (conn != null) {
-                    try {
-                        conn.close()
-                    } catch (_: SQLException) {
-                    }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
                 }
             }
         }
@@ -159,50 +161,49 @@ class CarController {
     }
 
 
-//        fun search() {
-//            val query: String = ""
-//
-//            var conn: Connection? = null
-//            var stmt: Statement? = null
-//            var rs: ResultSet? = null
-//
-//            try {
-//                conn = db.getConnection()
-//                if (conn != null) {
-//                    stmt = conn.createStatement()
-//                }
-//                if (stmt != null) {
-//                    rs = stmt.executeQuery(query)
-//                }
-//                if (rs != null) {
-//                    while (rs.next()) {
-//                        println("UID : " + rs.getString("uid"))
-//                        println("CarNo : " + rs.getInt("carNo"))
-//                        println("Driver Name : " + rs.getString("driverName"))
-//                        println("Navigator Name : " + rs.getString("navigatorName"))
-//                        println("-----------------------------------------------")
-//                    }
-//                }
-//            } catch (ex: SQLException) {
-//                // handle any errors
-//                ex.printStackTrace()
-//            } finally {
-//                if (stmt != null) {
-//                    try {
-//                        stmt.close()
-//                    } catch (sqlEx: SQLException) {
-//                    }
-//                }
-//                if (conn != null) {
-//                    try {
-//                        conn.close()
-//                    } catch (sqlEx: SQLException) {
-//                    }
-//                }
-//            }
-//        }
+    fun search(carUid: String): String {
+        var car: String = ""
 
-    fun delete(car: CarModel) {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Cars` where `uid`='${carUid}'")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    car += "\n Car Details :" + "\n    Car Number : " + rs.getString("carNo") + "\n    Driver Name : " + rs.getString(
+                        "driverName"
+                    ) + "\n    Navigator Name : " + rs.getString("navigatorName")
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return car
+    }
+
+    fun delete(car: Car) {
         var conn: Connection? = null
         var stmt: Statement? = null
 

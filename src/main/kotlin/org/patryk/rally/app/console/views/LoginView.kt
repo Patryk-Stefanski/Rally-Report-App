@@ -1,13 +1,14 @@
 package org.patryk.rally.app.console.views
 
+import javafx.scene.control.PasswordField
 import javafx.scene.control.TextField
 import org.patryk.rally.app.console.controllers.UserController
-import org.patryk.rally.app.console.models.UserModel
+import org.patryk.rally.app.console.models.User
 import tornadofx.*
 
 class LoginView : View("Login") {
     private var loginUsername: TextField = TextField()
-    private var loginPassword: TextField = TextField()
+    private var loginPassword: PasswordField = PasswordField()
 
     private val userController = UserController()
 
@@ -18,11 +19,11 @@ class LoginView : View("Login") {
                     hbox(20) {
                         vbox(20) {
                             field("User Name") { loginUsername = textfield() }
-                            field("Password") { loginPassword = textfield() }
+                            field("Password") { loginPassword =  passwordfield() }
                             buttonbar {
                                 button("Login") {
                                     action {
-                                        val newUser = UserModel(
+                                        val newUser = User(
                                             loginUsername.text,
                                             loginPassword.text,
                                             0

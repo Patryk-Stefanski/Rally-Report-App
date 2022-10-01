@@ -10,6 +10,11 @@ class MainView : View("Main Menu") {
             buttonbar {
                 button("Posts") {
                     action {
+                        find(MainView::class).replaceWith(
+                            PostView::class,
+                            sizeToScene = true,
+                            centerOnScreen = true
+                        )
                     }
                 }
                 style {

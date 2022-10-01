@@ -1,7 +1,9 @@
 package org.patryk.rally.app.console.controllers
 
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import mu.KotlinLogging
-import org.patryk.rally.app.console.models.LocationModel
+import org.patryk.rally.app.console.models.Location
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -9,14 +11,14 @@ import java.sql.Statement
 import java.util.*
 
 class LocationController {
-    val db  = DataBaseController()
+    val db = DataBaseController()
     val logger = KotlinLogging.logger {}
 
     init {
         logger.info { "Switching to Location Menu" }
     }
 
-    fun add(location: LocationModel) : Boolean {
+    fun add(location: Location): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -24,11 +26,11 @@ class LocationController {
             location.uid = UUID.randomUUID().toString()
         } else throw IllegalArgumentException("UID should be set automatically")
 
-        if (location.stage.isEmpty())  {
+        if (location.stage.isEmpty()) {
             throw IllegalArgumentException("Location stage number is empty")
         }
 
-        if (location.corner.isEmpty() ) {
+        if (location.corner.isEmpty()) {
             throw IllegalArgumentException("Location corner number is empty")
         }
 
@@ -58,11 +60,11 @@ class LocationController {
         return true
     }
 
-    fun list() : String  {
-        var locationList : String = ""
+    fun list(): ObservableList<String> {
+        var locationList: ObservableList<String> = FXCollections.observableArrayList()
         var conn: Connection? = null
         var stmt: Statement? = null
-        var rs : ResultSet? = null
+        var rs: ResultSet? = null
 
         try {
             conn = db.getConnection()
@@ -74,7 +76,11 @@ class LocationController {
             }
             if (rs != null) {
                 while (rs.next()) {
-                    locationList += "UID : " + rs.getString("uid") + "\n" + "Stage Number : " + rs.getString("stage") + "\n" + "Corner Number : " + rs.getString("corner") + "\n"+  "------------------------------------------" + "\n"
+                    locationList.add(
+                        "UID : " + rs.getString("uid") + ", Stage Number : " + rs.getString("stage") + ", Corner Number : " + rs.getString(
+                            "corner"
+                        ) + "\n"
+                    )
                 }
             }
         } catch (ex: SQLException) {
@@ -96,28 +102,28 @@ class LocationController {
         return locationList
     }
 
-    fun update(location: LocationModel) : Boolean {
+    fun update(location: Location): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
         var updateQuery: String = "UPDATE Locations SET"
 
 
-        if (location.stage.isNotEmpty())  {
+        if (location.stage.isNotEmpty()) {
             updateQuery += " stage = '${location.stage}' "
-            if (location.corner.isNotEmpty()){
+            if (location.corner.isNotEmpty()) {
                 updateQuery = "$updateQuery,"
             }
         }
 
-        if (location.corner.isNotEmpty()  ) {
+        if (location.corner.isNotEmpty()) {
             updateQuery += " corner = '${location.corner}' "
         }
 
 
         if (location.uid.isEmpty()) {
             throw IllegalArgumentException("Cannot update Location details because UID is empty")
-        }  else updateQuery += " WHERE uid = '${location.uid}'"
+        } else updateQuery += " WHERE uid = '${location.uid}'"
 
         println(updateQuery)
 
@@ -149,7 +155,7 @@ class LocationController {
         return false
     }
 
-    fun delete(location: LocationModel)  {
+    fun delete(location: Location) {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -180,6 +186,48 @@ class LocationController {
                 }
             }
         }
+    }
+
+    fun search(locationUid: String): String {
+        var location: String = ""
+
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Locations` where `uid`='${locationUid}'")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    location += "\n Location Details :" + "\n    Stage Number : " + rs.getString("stage") + "\n    Corner Number : " + rs.getString(
+                        "corner"
+                    )
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return location
     }
 
 }

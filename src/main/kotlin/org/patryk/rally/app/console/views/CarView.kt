@@ -5,7 +5,7 @@ import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
 import org.patryk.rally.app.console.controllers.CarController
-import org.patryk.rally.app.console.models.CarModel
+import org.patryk.rally.app.console.models.Car
 import tornadofx.*
 
 
@@ -23,6 +23,13 @@ class CarView : View("Car View") {
     private var carController = CarController()
 
 
+    private fun refreshTextArea() {
+        val carList = carController.list().toString()
+        listOfCars.clear()
+        listOfCars.appendText(carList.substring(1, carList.length - 1))
+    }
+
+
     override val root = vbox {
         form {
             vbox(20, Pos.TOP_RIGHT) {
@@ -37,7 +44,8 @@ class CarView : View("Car View") {
             }
             fieldset("List of Cars") {
                 listOfCars = textarea {
-                    text = carController.list()
+                    val carList = carController.list().toString()
+                    text = carList.substring(1, carList.length - 1)
                     prefRowCount = 5
                     vgrow = Priority.ALWAYS
                 }
@@ -51,15 +59,14 @@ class CarView : View("Car View") {
                                 buttonbar {
                                     button("Create") {
                                         action {
-                                            val newCarModel = CarModel(
+                                            val newCarModel = Car(
                                                 "",
                                                 createCarNo.text,
                                                 createDriverName.text,
                                                 createNavigatorName.text
                                             )
                                             carController.add(newCarModel)
-                                            listOfCars.clear()
-                                            listOfCars.appendText(carController.list())
+                                            refreshTextArea()
                                         }
                                     }
 
@@ -78,15 +85,14 @@ class CarView : View("Car View") {
                                 buttonbar {
                                     button("Update") {
                                         action {
-                                            val newCarModel = CarModel(
+                                            val newCarModel = Car(
                                                 updateCarUID.text,
                                                 updateCarNo.text,
                                                 updateDriverName.text,
                                                 updateNavigatorName.text
                                             )
                                             carController.update(newCarModel)
-                                            listOfCars.clear()
-                                            listOfCars.appendText(carController.list())
+                                            refreshTextArea()
                                         }
                                     }
                                 }
@@ -101,10 +107,9 @@ class CarView : View("Car View") {
                                 buttonbar {
                                     button("Delete") {
                                         action {
-                                            val newCarModel = CarModel(deleteCarUID.text, "", "", "")
+                                            val newCarModel = Car(deleteCarUID.text, "", "", "")
                                             carController.delete(newCarModel)
-                                            listOfCars.clear()
-                                            listOfCars.appendText(carController.list())
+                                            refreshTextArea()
                                         }
                                     }
                                 }

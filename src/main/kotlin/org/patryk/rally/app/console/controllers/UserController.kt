@@ -1,7 +1,7 @@
 package org.patryk.rally.app.console.controllers
 
 import mu.KotlinLogging
-import org.patryk.rally.app.console.models.UserModel
+import org.patryk.rally.app.console.models.User
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -16,10 +16,10 @@ class UserController {
     }
 
     companion object {
-        var thisUser: UserModel = UserModel("", "", 1)
+        var thisUser: User = User("", "", 1)
     }
 
-    fun login(user: UserModel): Boolean {
+    fun login(user: User): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
         var rs: ResultSet? = null
@@ -70,7 +70,7 @@ class UserController {
         return validated
     }
 
-    fun add(user: UserModel): Boolean {
+    fun add(user: User): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -112,7 +112,7 @@ class UserController {
     }
 
 
-    fun update(user: UserModel): Boolean {
+    fun update(user: User): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
@@ -150,7 +150,7 @@ class UserController {
         return true
     }
 
-    fun delete(user: UserModel): Boolean {
+    fun delete(user: User): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 

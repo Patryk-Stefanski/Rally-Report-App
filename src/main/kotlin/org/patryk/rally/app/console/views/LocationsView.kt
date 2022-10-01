@@ -5,7 +5,7 @@ import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
 import org.patryk.rally.app.console.controllers.LocationController
-import org.patryk.rally.app.console.models.LocationModel
+import org.patryk.rally.app.console.models.Location
 import tornadofx.*
 
 class LocationsView : View("Location View") {
@@ -18,6 +18,12 @@ class LocationsView : View("Location View") {
     private var listOfLocations: TextArea = TextArea()
 
     private var locationController = LocationController()
+
+    private fun refreshTextArea() {
+        val locationList = locationController.list().toString()
+        listOfLocations.clear()
+        listOfLocations.appendText(locationList.substring(1, locationList.length - 1))
+    }
 
 
     override val root = vbox {
@@ -35,7 +41,8 @@ class LocationsView : View("Location View") {
             }
             fieldset("List of Locations") {
                 listOfLocations = textarea {
-                    text = locationController.list()
+                    val locations = locationController.list().toString()
+                    text = locations.substring(1, locations.length - 1)
                     prefRowCount = 5
                     vgrow = Priority.ALWAYS
                 }
@@ -48,14 +55,13 @@ class LocationsView : View("Location View") {
                                 buttonbar {
                                     button("Create") {
                                         action {
-                                            val newLocationModel = LocationModel(
+                                            val newLocationModel = Location(
                                                 "",
                                                 createLocationStage.text,
                                                 createLocationCorner.text,
                                             )
                                             locationController.add(newLocationModel)
-                                            listOfLocations.clear()
-                                            listOfLocations.appendText(locationController.list())
+                                            refreshTextArea()
                                         }
                                     }
 
@@ -73,14 +79,13 @@ class LocationsView : View("Location View") {
                                 buttonbar {
                                     button("Update") {
                                         action {
-                                            val newLocationModel = LocationModel(
+                                            val newLocationModel = Location(
                                                 updateLocationUID.text,
                                                 updateLocationStage.text,
                                                 updateLocationCorner.text,
                                             )
                                             locationController.update(newLocationModel)
-                                            listOfLocations.clear()
-                                            listOfLocations.appendText(locationController.list())
+                                            refreshTextArea()
                                         }
                                     }
                                 }
@@ -95,10 +100,9 @@ class LocationsView : View("Location View") {
                                 buttonbar {
                                     button("Delete") {
                                         action {
-                                            val newLocationModel = LocationModel(deleteLocationUID.text, "", "")
+                                            val newLocationModel = Location(deleteLocationUID.text, "", "")
                                             locationController.delete(newLocationModel)
-                                            listOfLocations.clear()
-                                            listOfLocations.appendText(locationController.list())
+                                            refreshTextArea()
                                         }
                                     }
                                 }
