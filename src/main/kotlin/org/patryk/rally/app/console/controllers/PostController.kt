@@ -1,79 +1,223 @@
 package org.patryk.rally.app.console.controllers
 
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import mu.KotlinLogging
 import org.patryk.rally.app.console.models.*
-import org.patryk.rally.app.console.views.CarView
-import org.patryk.rally.app.console.views.LocationsView
-import org.patryk.rally.app.console.views.PostView
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Statement
+import java.util.*
+
 
 class PostController {
-    val posts = PostMemStore()
-    val postView = PostView()
-    val logger = KotlinLogging.logger {}
+    private val db = DataBaseController()
+    private val logger = KotlinLogging.logger {}
 
-    fun start() {
 
-        var input: Int
+    fun add(post: Post): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-        do {
-            input = postView.PostMenu()
-            when (input) {
-                1 -> add()
-                2 -> update()
-                3 -> list()
-                4 -> search()
-                0 -> returnMainMenu()
-                -1 -> println("Exiting App")
-                else -> println("Invalid Option")
+        if (post.uid.isEmpty()) {
+            post.uid = UUID.randomUUID().toString()
+        } else throw IllegalArgumentException("UID should be set automatically")
+
+        if (post.userId.isEmpty()) {
+            throw IllegalArgumentException("User isn't logged in")
+        }
+
+        if (post.carUid.isEmpty()) {
+            throw IllegalArgumentException("No Car selected")
+        }
+
+        if (post.locationUid.isEmpty()) {
+            throw IllegalArgumentException("No Location selected")
+        }
+
+        if (post.title.isEmpty()) {
+            throw IllegalArgumentException("No Title set")
+        }
+
+        if (post.date.toString().isEmpty()) {
+            throw IllegalArgumentException("No Date selected")
+        }
+
+        val carUid = post.carUid.substring(6, 42)
+        val locationUid = post.locationUid.substring(6, 42)
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
             }
-            println()
-        } while (input != -1)
-        logger.info { "Shutting Down Rally Report Console App" }
+            stmt!!.executeUpdate("INSERT INTO Posts (uid,userUid,carUid,locationUid,title,comments,date) VALUES('${post.uid}','${post.userId}','${carUid}','${locationUid}','${post.title}','Comment','${post.date}') ")
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
-    fun add() {
-        val post = PostModel()
+    fun list(): ObservableList<String> {
+        var postList: ObservableList<String> = FXCollections.observableArrayList()
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+        var carUid: String
+        var locationUid: String
 
-        if (postView.addPostData(post))
-            posts.create(post)
-        else
-            logger.info("Post Not Added")
+        var carController = CarController()
+        var locationController = LocationController()
+
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Posts`")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    carUid = rs.getString("carUid")
+                    locationUid = rs.getString("locationUid")
+                    postList.add(
+                        "UID : " + rs.getString("uid") + "\n Title : " + rs.getString("title") + "\n Date : " + rs.getString(
+                            "date"
+                        ) + "\n User : " + rs.getString("userUid") + carController.search(carUid) + locationController.search(
+                            locationUid
+                        ) + "\n"
+                    )
+                }
+            }
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return postList
     }
 
-    fun list() {
-        postView.listPosts(posts)
+    fun update(post: Post): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+
+        var updateQuery = "UPDATE Posts SET"
+
+        if (post.carUid.isNotEmpty()) {
+            var carUID = post.carUid.substring(6, 42)
+            updateQuery += " carUid = '${carUID}' "
+            if (post.locationUid.isNotEmpty() || post.title.isNotEmpty() || post.date.toString().isNotEmpty()) {
+                updateQuery = "$updateQuery,"
+            }
+        }
+
+        if (post.locationUid.isNotEmpty()) {
+            var locationUid = post.locationUid.substring(6, 42)
+            updateQuery += " locationUid = '${locationUid}' "
+            if (post.title.isNotEmpty() || post.date.toString().isNotEmpty()) {
+                updateQuery = "$updateQuery,"
+            }
+        }
+
+        if (post.title.isNotEmpty()) {
+            updateQuery += " title = '${post.title}' "
+            if (post.date.toString().isNotEmpty()) {
+                updateQuery = "$updateQuery,"
+            }
+        }
+
+        if (post.date.toString().isNotEmpty()) {
+            updateQuery += " date = '${post.date}' "
+        }
+
+        if (post.uid.isEmpty()) {
+            throw IllegalArgumentException("Cannot update Post details because UID is empty")
+        } else updateQuery += " WHERE uid = '${post.uid}'"
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate(updateQuery)
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
-    fun update() {
+    fun delete(postUid: String) {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-        postView.listPosts(posts)
-        val searchId = postView.getId()
-        val post = search(searchId)
+        if (postUid.isEmpty()) {
+            throw IllegalArgumentException("Cannot delete the post because UID is empty")
+        }
 
-        if (post != null) {
-            if (postView.updatePostData(post)) {
-                posts.update(post)
-                postView.showPost(post)
-                logger.info("Post Updated : [ $post ]")
-            } else
-                logger.info("Post Not Updated")
-        } else
-            println("Post Not Updated...")
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("DELETE FROM `Posts` WHERE uid = '${postUid}'")
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
     }
-
-    fun search() {
-        val post = search(postView.getId())!!
-        postView.showPost(post)
-    }
-
-    fun search(id: Long): PostModel? {
-        val foundPost = posts.findOne(id)
-        return foundPost
-    }
-
-
-    fun returnMainMenu() {
-        MainController().start()
-    }
-
 }

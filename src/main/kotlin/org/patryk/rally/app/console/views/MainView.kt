@@ -1,51 +1,66 @@
 package org.patryk.rally.app.console.views
 
-class MainView {
-
-    fun mainMenu() : Int {
-
-        var option : Int
-        var input: String?
-
-        println("MAIN MENU")
-        println(" 1. Login")
-        println(" 2. Manage Users")
-        println(" 3. Posts")
-        println(" 4. Manage Locations (Admin)")
-        println(" 5. Manage Cars (Admin)")
-        println("-1. Exit")
-        println()
-        print("Enter Option : ")
-        input = readLine()!!
-        option = if (input.toIntOrNull() != null && !input.isEmpty())
-            input.toInt()
-        else
-            -9
-        return option
-    }
+import tornadofx.*
+import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
 
 
-    fun Login(){
-        var username = ""
-        var password = ""
-
-        println("Login")
-        println("Enter username: ")
-        if (readLine() != null && readLine()!!.isNotEmpty()) {
-            username = readLine()!!
-        } else {
-            println("Error :  username is empty")
-            return
+class MainView : View("Main Menu") {
+    override val root = vbox(20) {
+        form {
+            buttonbar {
+                button("Posts") {
+                    action {
+                        find(MainView::class).replaceWith(
+                            PostView::class,
+                            sizeToScene = true,
+                            centerOnScreen = true
+                        )
+                    }
+                }
+                style {
+                    padding = box(10.px)
+                }
+            }
+            buttonbar {
+                button("User Management") {
+                    action {
+                        find(MainView::class).replaceWith(
+                            UserManagementView::class,
+                            sizeToScene = true,
+                            centerOnScreen = true
+                        )
+                    }
+                }
+                style {
+                    padding = box(10.px)
+                }
+            }
+            if (thisUser.admin == 1) {
+                buttonbar {
+                    button("Manage Cars") {
+                        action {
+                            find(MainView::class).replaceWith(CarView::class, sizeToScene = true, centerOnScreen = true)
+                        }
+                    }
+                    style {
+                        padding = box(10.px)
+                    }
+                }
+                buttonbar {
+                    button("Manage Locations") {
+                        action {
+                            find(MainView::class).replaceWith(
+                                LocationsView::class,
+                                sizeToScene = true,
+                                centerOnScreen = true
+                            )
+                        }
+                    }
+                    style {
+                        padding = box(10.px)
+                    }
+                }
+            }
         }
-
-        println("Enter password: ")
-        if (readLine() != null && readLine()!!.isNotEmpty()) {
-            password = readLine()!!
-        } else {
-            println("Error :  password is empty")
-            return
-        }
-
     }
-
 }

@@ -1,99 +1,87 @@
 package org.patryk.rally.app.console.views
 
+import javafx.geometry.Pos
+import javafx.scene.control.PasswordField
+import org.patryk.rally.app.console.controllers.UserController
+import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
 import org.patryk.rally.app.console.models.*
-import java.util.UUID
+import tornadofx.*
 
-class UserManagementView {
+class UserManagementView : View("User Management View") {
+    private var oldPassword: PasswordField = PasswordField()
+    private var newPassword: PasswordField = PasswordField()
+    private var repeatNewPassword: PasswordField = PasswordField()
+    private var deletePassword: PasswordField = PasswordField()
+    private var deletePasswordConfirm: PasswordField = PasswordField()
 
-    fun userMenu() : Int {
+    private var userController = UserController()
 
-        var option : Int
-        var input: String?
-
-        println("USER MANAGEMENT MENU")
-        println(" 1. Register User")
-        println(" 2. Update User")
-        println(" 3. List User")
-        println(" 0. Return to main menu")
-        println(" -1. Exit")
-        println()
-        print("Enter Option : ")
-        input = readLine()!!
-        option = if (input.toIntOrNull() != null && !input.isEmpty())
-            input.toInt()
-        else
-            -9
-        return option
-    }
-
-    fun registerUser(user : UserModel) : Boolean {
-
-        println("Register")
-        println("Enter username: ")
-        user.username = readLine()!!
-
-        println("Enter password: ")
-        user.password = readLine()!!
-
-        user.admin = false
-
-        return user.username.isNotEmpty() && user.password.isNotEmpty()
-    }
-
-    fun updateUserData(user : UserModel) : Boolean {
-
-        var tempUserName: String?
-        var tempPassword: String?
-
-        if (user != null) {
-
-            print("Enter password :")
-            if (readLine() != user.password) {
-                println("Error : Incorrect Password")
-                return  false
+    override val root = vbox {
+        form {
+            vbox(20, Pos.TOP_RIGHT) {
+                buttonbar {
+                    button("Return to Main Menu") {
+                        action {
+                            find(UserManagementView::class).replaceWith(
+                                MainView::class,
+                                sizeToScene = true,
+                                centerOnScreen = true
+                            )
+                        }
+                    }
+                }
             }
+            hbox(20) {
+                fieldset("Change Password") {
+                    hbox(20) {
+                        vbox {
+                            field("Current Password") { oldPassword = passwordfield() }
+                            field("New Password") { newPassword = passwordfield() }
+                            field("Repeat New Password") { repeatNewPassword = passwordfield() }
+                            buttonbar {
+                                button("Apply Changes") {
+                                    action {
+                                        if (newPassword.text != repeatNewPassword.text) {
+                                            newPassword.text = "NoMatch"
+                                        }
+                                        val newUser = User(
+                                            thisUser.username,
+                                            newPassword.text,
+                                            0
+                                        )
+                                        userController.update(newUser)
+                                    }
+                                }
 
-            print("Enter a new Username  for [ " + user.username + " ] : ")
-            tempUserName = readLine()!!
-            print("Enter a new password or leave empty to keep old password :")
-            tempPassword = readLine()!!
-            if (tempPassword == "") {
-                tempPassword = user.password
-            }
+                            }
+                        }
 
-            if (!tempUserName.isNullOrEmpty() && !tempPassword.isNullOrEmpty()) {
-                user.username = tempUserName
-                user.password = tempPassword
-                return true
+                    }
+                }
+                fieldset("Delete User") {
+                    hbox(20) {
+                        vbox {
+                            field("Password") { deletePassword = passwordfield() }
+                            field("Confirm Password") { deletePasswordConfirm = passwordfield() }
+                            buttonbar {
+                                button("Delete") {
+                                    action {
+                                        if (deletePassword.text != deletePasswordConfirm.text) {
+                                            deletePassword.text = "NoMatch"
+                                        }
+                                        val newUser = User(
+                                            thisUser.username,
+                                            deletePassword.text,
+                                            0
+                                        )
+                                        userController.delete(newUser)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-        return false
     }
-
-    fun showUser(user : UserModel) {
-        if(user != null)
-            println("User Details [ ${user.uid} , ${user.username} ]")
-        else
-            println("User Not Found...")
-    }
-
-    fun listUsers(users : UserMemStore) {
-        println("List All Users")
-        println()
-        users.logAll()
-        println()
-    }
-
-    fun getId() : UUID {
-        var strId : String? // String to hold user input
-        var searchId : UUID // Long to hold converted id
-        print("Enter id to Search/Update : ")
-        strId = readLine()!!
-         if (!strId.isEmpty()) {
-            searchId = UUID.fromString(strId)
-             return  searchId
-        } else return UUID.fromString("")
-    }
-
-
 }

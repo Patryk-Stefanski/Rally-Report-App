@@ -1,89 +1,239 @@
 package org.patryk.rally.app.console.controllers
 
+import javafx.collections.FXCollections
+import javafx.collections.ObservableList
 import mu.KotlinLogging
-import org.patryk.rally.app.console.models.CarModel
-import org.patryk.rally.app.console.models.CarMemStore
-import org.patryk.rally.app.console.views.CarView
+import org.patryk.rally.app.console.models.Car
+import java.sql.*
+import java.util.*
 
 
 class CarController {
-    val cars = CarMemStore()
-    val carView = CarView()
-    val logger = KotlinLogging.logger {}
+    private val db = DataBaseController()
+    private val logger = KotlinLogging.logger {}
 
     init {
         logger.info { "Switching to Car Menu" }
     }
 
-    fun start() {
+    fun add(car: Car): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-        var input: Int
+        if (car.uid.isEmpty()) {
+            car.uid = UUID.randomUUID().toString()
+        } else throw IllegalArgumentException("UID should be set automatically")
 
-        do {
-            input = carView.carMenu()
-            when (input) {
-                1 -> add()
-                2 -> update()
-                3 -> list()
-                4 -> search()
-                0 -> returnMainMenu()
-                -99 -> dummyData()
-                -1 -> println("Exiting App")
-                else -> println("Invalid Option")
+        if (car.carNo.isEmpty()) {
+            throw IllegalArgumentException("Car number is empty")
+        }
+
+        if (car.driverName.isEmpty()) {
+            throw IllegalArgumentException("Car driver name is empty")
+        }
+
+        if (car.navigatorName.isEmpty()) {
+            throw IllegalArgumentException("Car navigator name is empty")
+        }
+
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
             }
-            println()
-        } while (input != -1)
-        logger.info { "Shutting Down Rally Report Console App" }
+            stmt!!.executeUpdate("INSERT INTO Cars (uid,carNo,driverName,navigatorName) VALUES('${car.uid}','${car.carNo}','${car.driverName}','${car.navigatorName}') ")
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
-    fun add() {
-        val aCar = CarModel()
+    fun list(): ObservableList<String> {
+        var carList: ObservableList<String> = FXCollections.observableArrayList()
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
 
-        if (carView.addCarData(aCar))
-            cars.create(aCar)
-        else
-            logger.info("Car Not Added")
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Cars`")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    carList.add(
+                        "UID : " + rs.getString("uid") + ", CarNo : " + rs.getString("carNo") + ", Driver Name : " + rs.getString(
+                            "driverName"
+                        ) + ", Navigator Name : " + rs.getString("navigatorName") + "\n"
+                    )
+                }
+            }
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return carList
     }
 
-    fun list() {
-        carView.listCars(cars)
+    fun update(car: Car): Boolean {
+        var conn: Connection? = null
+        var stmt: Statement? = null
+
+        var updateQuery = "UPDATE Cars SET"
+
+
+        if (car.carNo.isNotEmpty()) {
+            updateQuery += " carNo = '${car.carNo}' "
+            if (car.driverName.isNotEmpty() || car.navigatorName.isNotEmpty()) {
+                updateQuery = "$updateQuery,"
+            }
+        }
+
+        if (car.driverName.isNotEmpty()) {
+            updateQuery += " driverName = '${car.driverName}' "
+            if (car.navigatorName.isNotEmpty()) {
+                updateQuery = "$updateQuery,"
+            }
+        }
+
+        if (car.navigatorName.isNotEmpty()) {
+            updateQuery += " navigatorName = '${car.navigatorName}' "
+        }
+
+        if (car.uid.isEmpty()) {
+            throw IllegalArgumentException("Cannot update Car details because UID is empty")
+        } else updateQuery += " WHERE uid = '${car.uid}'"
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate(updateQuery)
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return true
     }
 
-    fun update() {
 
-        carView.listCars(cars)
-        val searchId = carView.getId()
-        val aCar = search(searchId)
+    fun search(carUid: String): String {
+        var car: String = ""
 
-        if (aCar != null) {
-            if (carView.updateCarData(aCar)) {
-                cars.update(aCar)
-                carView.showCar(aCar)
-                logger.info("Car Updated : [ $aCar ]")
-            } else
-                logger.info("Car Not Updated")
-        } else
-            println("Car Not Updated...")
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Cars` where `uid`='${carUid}'")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    car += "\n Car Details :" + "\n    Car Number : " + rs.getString("carNo") + "\n    Driver Name : " + rs.getString(
+                        "driverName"
+                    ) + "\n    Navigator Name : " + rs.getString("navigatorName")
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return car
     }
 
-    fun search() {
-        val aCar = search(carView.getId())!!
-        carView.showCar(aCar)
-    }
+    fun delete(car: Car) {
+        var conn: Connection? = null
+        var stmt: Statement? = null
 
-    fun search(id: Long): CarModel? {
-        val foundCar = cars.findOne(id)
-        return foundCar
-    }
+        if (car.uid.isEmpty()) {
+            throw IllegalArgumentException("Cannot delete the car because UID is empty")
+        }
 
-    fun dummyData() {
-        cars.create(CarModel(id = 0, carNo = 1, driverName = "Josh Moffet", navigatorName = "Andy Hayes"))
-        cars.create(CarModel(id = 1, carNo = 2, driverName = "Craig Breen", navigatorName = "Paul Nagle"))
-        cars.create(CarModel(id = 2, carNo = 3, driverName = "James Stafford", navigatorName = "Thomas Scallan"))
-    }
-
-    fun returnMainMenu() {
-        MainController().start()
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            stmt!!.executeUpdate("DELETE FROM `Cars` WHERE uid = '${car.uid}'")
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
     }
 
 }
