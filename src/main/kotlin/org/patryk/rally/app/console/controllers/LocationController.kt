@@ -24,14 +24,19 @@ class LocationController {
 
         if (location.uid.isEmpty()) {
             location.uid = UUID.randomUUID().toString()
-        } else throw IllegalArgumentException("UID should be set automatically")
+        } else {
+            logger.info { "UID should be set automatically" }
+            return false
+        }
 
         if (location.stage.isEmpty()) {
-            throw IllegalArgumentException("Location stage number is empty")
+            logger.info { "Location stage number is empty" }
+            return false
         }
 
         if (location.corner.isEmpty()) {
-            throw IllegalArgumentException("Location corner number is empty")
+            logger.info { "Location corner number is empty" }
+            return false
         }
 
 
@@ -43,6 +48,7 @@ class LocationController {
             stmt!!.executeUpdate("INSERT INTO Locations (uid,stage,corner) VALUES('${location.uid}','${location.stage}','${location.corner}') ")
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -122,10 +128,11 @@ class LocationController {
 
 
         if (location.uid.isEmpty()) {
-            throw IllegalArgumentException("Cannot update Location details because UID is empty")
+            logger.info { "Cannot update Location details because UID is empty" }
+            return false
         } else updateQuery += " WHERE uid = '${location.uid}'"
 
-        println(updateQuery)
+
 
 
         try {
@@ -137,6 +144,7 @@ class LocationController {
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
+            return false
         } finally {
 
             if (stmt != null) {
@@ -155,12 +163,15 @@ class LocationController {
         return false
     }
 
-    fun delete(location: Location) {
+    fun delete(location: Location): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet? = null
+        var foundUID = false
 
         if (location.uid.isEmpty()) {
-            throw IllegalArgumentException("Cannot delete the location because UID is empty")
+            logger.info { "Cannot delete the location because UID is empty" }
+            return false
         }
 
         try {
@@ -168,10 +179,22 @@ class LocationController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate("DELETE FROM `Locations` WHERE uid = '${location.uid}'")
+            rs = stmt!!.executeQuery("SELECT * FROM `Locations`")
+            while (rs.next()) {
+                if (rs.getString("uid") == location.uid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate("DELETE FROM `Locations` WHERE uid = '${location.uid}'")
+            }
+
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -186,6 +209,7 @@ class LocationController {
                 }
             }
         }
+        return true
     }
 
     fun search(locationUid: String): String {
