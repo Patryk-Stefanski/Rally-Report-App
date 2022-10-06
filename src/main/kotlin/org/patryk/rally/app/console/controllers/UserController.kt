@@ -51,7 +51,6 @@ class UserController {
                     thisUser.username = user.username
                     thisUser.password = user.password
                     thisUser.admin = rs.getInt("admin")
-                    System.out.println(thisUser.admin)
                 }
             }
         } catch (ex: SQLException) {
