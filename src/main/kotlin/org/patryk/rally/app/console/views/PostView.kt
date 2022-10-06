@@ -40,7 +40,7 @@ class PostView : View("Post View") {
 
     override val root = vbox {
         form {
-            vbox(20, Pos.TOP_RIGHT) {
+            hbox(20, Pos.TOP_RIGHT) {
                 buttonbar {
                     button("Return to Main Menu") {
                         action {
@@ -53,10 +53,21 @@ class PostView : View("Post View") {
 
                     }
                 }
+                buttonbar {
+                    button("Reload Combobox") {
+                        action {
+                            chosenCar.items.setAll(carController.list())
+                            chosenLocation.items.setAll(locationController.list())
+                            chosenCarUpdate.items.setAll(carController.list())
+                            chosenCarUpdate.items.setAll(locationController.list())
+                        }
+
+                    }
+                }
             }
             fieldset("Posts") {
                 listOfPosts = textarea {
-                    var postList = postController.list().toString()
+                    val postList = postController.list().toString()
                     text = postList.substring(1, postList.length - 1)
                     prefRowCount = 5
                     vgrow = Priority.ALWAYS
