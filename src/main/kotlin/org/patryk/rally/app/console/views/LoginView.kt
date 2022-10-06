@@ -1,4 +1,5 @@
 package org.patryk.rally.app.console.views
+import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
 
 import javafx.scene.control.Alert
 import javafx.scene.control.PasswordField
@@ -32,16 +33,25 @@ class LoginView : View("Login") {
                                         if (userController.login(newUser)) {
                                             loginUsername.text = ""
                                             loginPassword.text = ""
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Incorrect Password",
+                                                "Username and password combination is incorrect"
+                                            )
+                                        }
+
+                                        if (thisUser.admin == 0){
                                             find(LoginView::class).replaceWith(
                                                 MainView::class,
                                                 sizeToScene = true,
                                                 centerOnScreen = true
                                             )
                                         } else {
-                                            alert(
-                                                Alert.AlertType.INFORMATION,
-                                                "Incorrect Password",
-                                                "Username and password combination is incorrect"
+                                            find(LoginView::class).replaceWith(
+                                                AdminMainView::class,
+                                                sizeToScene = true,
+                                                centerOnScreen = true
                                             )
                                         }
                                     }
