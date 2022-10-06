@@ -108,7 +108,7 @@ class CarView : View("Car View") {
                                                     alert(
                                                         Alert.AlertType.CONFIRMATION,
                                                         "Success",
-                                                        "Car has been deleted"
+                                                        "Car has been updated"
                                                     )
                                                 } else {
                                                     alert(

@@ -137,6 +137,8 @@ class PostController {
     fun update(post: Post): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet?
+        var foundUID = false
 
         var updateQuery = "UPDATE Posts SET"
 
@@ -177,7 +179,17 @@ class PostController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate(updateQuery)
+            rs = stmt!!.executeQuery("SELECT * FROM `Posts`")
+            while (rs.next()) {
+                if (rs.getString("uid") == post.uid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate(updateQuery)
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()

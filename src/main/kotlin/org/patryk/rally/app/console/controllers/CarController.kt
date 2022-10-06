@@ -22,9 +22,6 @@ class CarController {
 
         if (car.uid.isEmpty()) {
             car.uid = UUID.randomUUID().toString()
-        } else {
-            logger.info { "UID should be set automatically" }
-            return false
         }
 
         if (car.carNo.isEmpty()) {
@@ -114,6 +111,8 @@ class CarController {
     fun update(car: Car): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet?
+        var foundUID = false
 
         var updateQuery = "UPDATE Cars SET"
 
@@ -146,7 +145,17 @@ class CarController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate(updateQuery)
+            rs = stmt!!.executeQuery("SELECT * FROM `Cars`")
+            while (rs.next()) {
+                if (rs.getString("uid") == car.uid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate(updateQuery)
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
@@ -228,7 +237,7 @@ class CarController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            rs = stmt!!.executeQuery("SELECT * FROM `Posts`")
+            rs = stmt!!.executeQuery("SELECT * FROM `Cars`")
             while (rs.next()) {
                 if (rs.getString("uid") == car.uid) {
                     foundUID = true;
@@ -258,5 +267,46 @@ class CarController {
             }
         }
         return true
+    }
+
+
+    fun findCarUID(carNo: String): String {
+        var car: String = ""
+
+        var conn: Connection? = null
+        var stmt: Statement? = null
+        var rs: ResultSet? = null
+
+        try {
+            conn = db.getConnection()
+            if (conn != null) {
+                stmt = conn.createStatement()
+            }
+            if (stmt != null) {
+                rs = stmt.executeQuery("SELECT * FROM `Cars` where `carNo`='${carNo}'")
+            }
+            if (rs != null) {
+                while (rs.next()) {
+                    car = rs.getString("UID")
+                }
+            }
+        } catch (ex: SQLException) {
+            // handle any errors
+            ex.printStackTrace()
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close()
+                } catch (_: SQLException) {
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.close()
+                } catch (_: SQLException) {
+                }
+            }
+        }
+        return car
     }
 }

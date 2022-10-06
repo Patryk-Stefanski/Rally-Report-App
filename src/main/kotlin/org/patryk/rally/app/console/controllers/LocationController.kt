@@ -111,6 +111,8 @@ class LocationController {
     fun update(location: Location): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet?
+        var foundUID = false
 
         var updateQuery: String = "UPDATE Locations SET"
 
@@ -140,7 +142,17 @@ class LocationController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate(updateQuery)
+            rs = stmt!!.executeQuery("SELECT * FROM `Locations`")
+            while (rs.next()) {
+                if (rs.getString("uid") == location.uid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate(updateQuery)
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
