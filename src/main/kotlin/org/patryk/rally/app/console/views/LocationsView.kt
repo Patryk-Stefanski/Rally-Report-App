@@ -1,6 +1,7 @@
 package org.patryk.rally.app.console.views
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
@@ -60,14 +61,24 @@ class LocationsView : View("Location View") {
                                                 createLocationStage.text,
                                                 createLocationCorner.text,
                                             )
-                                            locationController.add(newLocationModel)
-                                            refreshTextArea()
+                                            if (locationController.add(newLocationModel)) {
+                                                refreshTextArea()
+                                                alert(
+                                                    Alert.AlertType.CONFIRMATION,
+                                                    "Success",
+                                                    "New Location has been created"
+                                                )
+                                            } else {
+                                                alert(
+                                                    Alert.AlertType.INFORMATION,
+                                                    "Failed to create new Location",
+                                                    "Make sure that all the details are filled in"
+                                                )
+                                            }
                                         }
                                     }
-
                                 }
                             }
-
                         }
                     }
                     fieldset("Update Location") {
@@ -84,8 +95,21 @@ class LocationsView : View("Location View") {
                                                 updateLocationStage.text,
                                                 updateLocationCorner.text,
                                             )
-                                            locationController.update(newLocationModel)
-                                            refreshTextArea()
+                                            if (locationController.update(newLocationModel)) {
+                                                alert(
+                                                    Alert.AlertType.CONFIRMATION,
+                                                    "Success",
+                                                    "Location has been Updated"
+                                                )
+                                                refreshTextArea()
+                                            } else {
+                                                alert(
+                                                    Alert.AlertType.INFORMATION,
+                                                    "Failed to update location",
+                                                    "Make sure all the details are filled in"
+                                                )
+                                            }
+
                                         }
                                     }
                                 }
@@ -101,8 +125,22 @@ class LocationsView : View("Location View") {
                                     button("Delete") {
                                         action {
                                             val newLocationModel = Location(deleteLocationUID.text, "", "")
-                                            locationController.delete(newLocationModel)
-                                            refreshTextArea()
+
+                                            if (locationController.delete(newLocationModel)) {
+                                                refreshTextArea()
+                                                alert(
+                                                    Alert.AlertType.CONFIRMATION,
+                                                    "Success",
+                                                    "Location has been deleted"
+                                                )
+                                            } else {
+                                                alert(
+                                                    Alert.AlertType.INFORMATION,
+                                                    "Failed to delete location",
+                                                    "Make sure the correct UID is supplied"
+                                                )
+
+                                            }
                                         }
                                     }
                                 }
@@ -113,5 +151,4 @@ class LocationsView : View("Location View") {
             }
         }
     }
-
 }

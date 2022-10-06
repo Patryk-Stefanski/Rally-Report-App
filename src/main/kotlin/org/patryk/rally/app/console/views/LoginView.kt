@@ -1,5 +1,6 @@
 package org.patryk.rally.app.console.views
 
+import javafx.scene.control.Alert
 import javafx.scene.control.PasswordField
 import javafx.scene.control.TextField
 import org.patryk.rally.app.console.controllers.UserController
@@ -19,7 +20,7 @@ class LoginView : View("Login") {
                     hbox(20) {
                         vbox(20) {
                             field("User Name") { loginUsername = textfield() }
-                            field("Password") { loginPassword =  passwordfield() }
+                            field("Password") { loginPassword = passwordfield() }
                             buttonbar {
                                 button("Login") {
                                     action {
@@ -29,10 +30,18 @@ class LoginView : View("Login") {
                                             0
                                         )
                                         if (userController.login(newUser)) {
+                                            loginUsername.text = ""
+                                            loginPassword.text = ""
                                             find(LoginView::class).replaceWith(
                                                 MainView::class,
                                                 sizeToScene = true,
                                                 centerOnScreen = true
+                                            )
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Incorrect Password",
+                                                "Username and password combination is incorrect"
                                             )
                                         }
                                     }

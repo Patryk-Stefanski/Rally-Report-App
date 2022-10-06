@@ -16,7 +16,7 @@ class UserController {
     }
 
     companion object {
-        var thisUser: User = User("", "", 1)
+        var thisUser: User = User("", "", 0)
     }
 
     fun login(user: User): Boolean {
@@ -26,11 +26,13 @@ class UserController {
         var validated = false
 
         if (user.username.isEmpty()) {
-            throw IllegalArgumentException("Username field is empty")
+            logger.info { ("Username field is empty") }
+            return false
         }
 
         if (user.password.isEmpty()) {
-            throw IllegalArgumentException("Password field is empty")
+            logger.info { "Password field is empty" }
+            return false
         }
 
         try {
@@ -49,10 +51,12 @@ class UserController {
                     thisUser.username = user.username
                     thisUser.password = user.password
                     thisUser.admin = rs.getInt("admin")
+                    System.out.println(thisUser.admin)
                 }
             }
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -75,15 +79,18 @@ class UserController {
         var stmt: Statement? = null
 
         if (user.username.isEmpty()) {
-            throw IllegalArgumentException("Username field is empty")
+            logger.info { "Username field is empty , failed to create new user" }
+            return false
         }
 
         if (user.password.isEmpty()) {
-            throw IllegalArgumentException("Password field is empty")
+            logger.info { "Password field is empty , failed to create new user" }
+            return false
         }
 
         if (user.password == "NoMatch") {
-            throw IllegalArgumentException("Passwords don't match")
+            logger.info { "Passwords don't match , failed to create new user" }
+            return false
         }
 
         try {
@@ -94,6 +101,7 @@ class UserController {
             stmt!!.executeUpdate("INSERT INTO Users (username,password,admin) VALUES('${user.username}','${user.password}','${user.admin}')")
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -117,11 +125,13 @@ class UserController {
         var stmt: Statement? = null
 
         if (user.password.isEmpty()) {
-            throw IllegalArgumentException("Password field is empty")
+            logger.info { "Password field is empty , failed to update user" }
+            return false
         }
 
         if (user.password == "NoMatch") {
-            throw IllegalArgumentException("Passwords don't match")
+            logger.info { "Passwords don't match , failed to update user" }
+            return false
         }
 
         try {
@@ -132,6 +142,7 @@ class UserController {
             stmt!!.executeUpdate("UPDATE Users SET password = '${user.password}' where username = '${user.username}'")
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -153,13 +164,17 @@ class UserController {
     fun delete(user: User): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var foundUsername = false
+        var rs: ResultSet? = null
 
         if (user.password.isEmpty()) {
-            throw IllegalArgumentException("Password field is empty")
+            logger.info { "Password field is empty , failed to delete user" }
+            return false
         }
 
         if (user.password == "NoMatch") {
-            throw IllegalArgumentException("Passwords don't match")
+            logger.info { "Passwords don't match , failed to delete user" }
+            return false
         }
 
         if (user.password != thisUser.password) {
@@ -172,10 +187,21 @@ class UserController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate("DELETE FROM `Users` WHERE username = '${user.username}'")
+            rs = stmt!!.executeQuery("SELECT * FROM `Users`")
+            while (rs.next()) {
+                if (rs.getString("username") == user.username) {
+                    foundUsername = true;
+                }
+            }
+            if (!foundUsername) {
+                return false
+            } else {
+                stmt.executeUpdate("DELETE FROM `Users` WHERE username = '${user.username}'")
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {

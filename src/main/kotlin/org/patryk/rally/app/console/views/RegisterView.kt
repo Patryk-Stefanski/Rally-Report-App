@@ -1,6 +1,7 @@
 package org.patryk.rally.app.console.views
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import javafx.scene.control.PasswordField
 import javafx.scene.control.TextField
 import org.patryk.rally.app.console.controllers.UserController
@@ -52,6 +53,13 @@ class RegisterView : View("Register User") {
                                                 LoginView::class,
                                                 sizeToScene = true,
                                                 centerOnScreen = true
+                                            )
+                                            alert(Alert.AlertType.CONFIRMATION, "Success", "New user has been created")
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Failed to create a new user",
+                                                "Double check that passwords match "
                                             )
                                         }
                                     }

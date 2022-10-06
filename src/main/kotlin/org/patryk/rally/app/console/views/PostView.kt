@@ -2,6 +2,7 @@ package org.patryk.rally.app.console.views
 
 import javafx.beans.property.SimpleObjectProperty
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
@@ -85,6 +86,12 @@ class PostView : View("Post View") {
                                 buttonbar {
                                     button("Create") {
                                         action {
+                                            if (chosenCar.value == null) {
+                                                chosenCar.value = ""
+                                            }
+                                            if (chosenLocation.value == null) {
+                                                chosenLocation.value = ""
+                                            }
                                             val newPost = Post(
                                                 "",
                                                 thisUser.username,
@@ -94,8 +101,20 @@ class PostView : View("Post View") {
                                                 dateProperty.value,
                                                 ""
                                             )
-                                            postController.add(newPost)
-                                            refreshTextArea()
+                                            if (postController.add(newPost)) {
+                                                alert(
+                                                    Alert.AlertType.CONFIRMATION,
+                                                    "Success",
+                                                    "New post has been created"
+                                                )
+                                                refreshTextArea()
+                                            } else {
+                                                alert(
+                                                    Alert.AlertType.INFORMATION,
+                                                    "Failed to create post",
+                                                    "Make sure all the details are filled in"
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -145,8 +164,17 @@ class PostView : View("Post View") {
                                             dateProperty.value,
                                             ""
                                         )
-                                        postController.update(newPost)
-                                        refreshTextArea()
+                                        if (postController.update(newPost)) {
+                                            alert(Alert.AlertType.CONFIRMATION, "Success", "Post has been Updated")
+                                            refreshTextArea()
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Failed to update post",
+                                                "Make sure all the details are filled in"
+                                            )
+                                        }
+
                                     }
                                 }
                             }
@@ -161,8 +189,17 @@ class PostView : View("Post View") {
                             buttonbar {
                                 button("Delete") {
                                     action {
-                                        postController.delete(postUidDelete.text)
-                                        refreshTextArea()
+                                        if (postController.delete(postUidDelete.text)) {
+                                            refreshTextArea()
+                                            alert(Alert.AlertType.CONFIRMATION, "Success", "Post has been deleted")
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Failed to delete post",
+                                                "Make sure the correct UID is supplied"
+                                            )
+                                        }
+
                                     }
                                 }
                             }

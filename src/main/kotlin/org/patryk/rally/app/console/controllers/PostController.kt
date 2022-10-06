@@ -4,6 +4,7 @@ import javafx.collections.FXCollections
 import javafx.collections.ObservableList
 import mu.KotlinLogging
 import org.patryk.rally.app.console.models.*
+import java.rmi.server.UID
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -14,6 +15,10 @@ import java.util.*
 class PostController {
     private val db = DataBaseController()
     private val logger = KotlinLogging.logger {}
+
+    init {
+        logger.info { "Switching to Post Menu" }
+    }
 
 
     fun add(post: Post): Boolean {
@@ -29,19 +34,23 @@ class PostController {
         }
 
         if (post.carUid.isEmpty()) {
-            throw IllegalArgumentException("No Car selected")
+            logger.info { "No Car selected , failed to create new car" }
+            return false
         }
 
         if (post.locationUid.isEmpty()) {
-            throw IllegalArgumentException("No Location selected")
+            logger.info { "No Location selected , failed to create new car" }
+            return false
         }
 
         if (post.title.isEmpty()) {
-            throw IllegalArgumentException("No Title set")
+            logger.info { "No Title set, failed to create new car" }
+            return false
         }
 
         if (post.date.toString().isEmpty()) {
-            throw IllegalArgumentException("No Date selected")
+            logger.info { "No Date selected, failed to create new car" }
+            return false
         }
 
         val carUid = post.carUid.substring(6, 42)
@@ -55,6 +64,7 @@ class PostController {
             stmt!!.executeUpdate("INSERT INTO Posts (uid,userUid,carUid,locationUid,title,comments,date) VALUES('${post.uid}','${post.userId}','${carUid}','${locationUid}','${post.title}','Comment','${post.date}') ")
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -158,7 +168,8 @@ class PostController {
         }
 
         if (post.uid.isEmpty()) {
-            throw IllegalArgumentException("Cannot update Post details because UID is empty")
+            logger.info { "Cannot update Post details because UID is empty" }
+            return false
         } else updateQuery += " WHERE uid = '${post.uid}'"
 
         try {
@@ -188,12 +199,15 @@ class PostController {
         return true
     }
 
-    fun delete(postUid: String) {
+    fun delete(postUid: String): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet? = null
+        var foundUID = false
 
         if (postUid.isEmpty()) {
-            throw IllegalArgumentException("Cannot delete the post because UID is empty")
+            logger.info { "Cannot delete the post because UID is empty" }
+            return false
         }
 
         try {
@@ -201,7 +215,17 @@ class PostController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate("DELETE FROM `Posts` WHERE uid = '${postUid}'")
+            rs = stmt!!.executeQuery("SELECT * FROM `Posts`")
+            while (rs.next()) {
+                if (rs.getString("uid") == postUid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate("DELETE FROM `Posts` WHERE uid = '${postUid}'")
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
@@ -219,5 +243,6 @@ class PostController {
                 }
             }
         }
+        return true
     }
 }

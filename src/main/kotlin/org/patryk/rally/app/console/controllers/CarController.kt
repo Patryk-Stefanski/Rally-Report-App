@@ -22,18 +22,24 @@ class CarController {
 
         if (car.uid.isEmpty()) {
             car.uid = UUID.randomUUID().toString()
-        } else throw IllegalArgumentException("UID should be set automatically")
+        } else {
+            logger.info { "UID should be set automatically" }
+            return false
+        }
 
         if (car.carNo.isEmpty()) {
-            throw IllegalArgumentException("Car number is empty")
+            logger.info { "Car number is empty" }
+            return false
         }
 
         if (car.driverName.isEmpty()) {
-            throw IllegalArgumentException("Car driver name is empty")
+            logger.info { "Car driver name is empty" }
+            return false
         }
 
         if (car.navigatorName.isEmpty()) {
-            throw IllegalArgumentException("Car navigator name is empty")
+            logger.info { "Car navigator name is empty" }
+            return false
         }
 
 
@@ -45,6 +51,7 @@ class CarController {
             stmt!!.executeUpdate("INSERT INTO Cars (uid,carNo,driverName,navigatorName) VALUES('${car.uid}','${car.carNo}','${car.driverName}','${car.navigatorName}') ")
         } catch (ex: SQLException) {
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -130,7 +137,8 @@ class CarController {
         }
 
         if (car.uid.isEmpty()) {
-            throw IllegalArgumentException("Cannot update Car details because UID is empty")
+            logger.info { "Cannot update Car details because UID is empty" }
+            return false
         } else updateQuery += " WHERE uid = '${car.uid}'"
 
         try {
@@ -142,6 +150,7 @@ class CarController {
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
+            return false
         } finally {
 
             if (stmt != null) {
@@ -203,12 +212,15 @@ class CarController {
         return car
     }
 
-    fun delete(car: Car) {
+    fun delete(car: Car): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
+        var rs: ResultSet? = null
+        var foundUID = false
 
         if (car.uid.isEmpty()) {
-            throw IllegalArgumentException("Cannot delete the car because UID is empty")
+            logger.info { "Cannot delete the car because UID is empty" }
+            return false
         }
 
         try {
@@ -216,10 +228,21 @@ class CarController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate("DELETE FROM `Cars` WHERE uid = '${car.uid}'")
+            rs = stmt!!.executeQuery("SELECT * FROM `Posts`")
+            while (rs.next()) {
+                if (rs.getString("uid") == car.uid) {
+                    foundUID = true;
+                }
+            }
+            if (!foundUID) {
+                return false
+            } else {
+                stmt.executeUpdate("DELETE FROM `Cars` WHERE uid = '${car.uid}'")
+            }
         } catch (ex: SQLException) {
             // handle any errors
             ex.printStackTrace()
+            return false
         } finally {
             if (stmt != null) {
                 try {
@@ -234,6 +257,6 @@ class CarController {
                 }
             }
         }
+        return true
     }
-
 }

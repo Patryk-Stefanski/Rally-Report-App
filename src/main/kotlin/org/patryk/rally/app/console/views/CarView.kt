@@ -1,6 +1,7 @@
 package org.patryk.rally.app.console.views
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import javafx.scene.control.TextArea
 import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
@@ -65,51 +66,87 @@ class CarView : View("Car View") {
                                                 createDriverName.text,
                                                 createNavigatorName.text
                                             )
-                                            carController.add(newCarModel)
-                                            refreshTextArea()
+                                            if (carController.add(newCarModel)) {
+                                                refreshTextArea()
+                                                alert(
+                                                    Alert.AlertType.CONFIRMATION,
+                                                    "Success",
+                                                    "New car has been created"
+                                                )
+                                            } else {
+                                                alert(
+                                                    Alert.AlertType.INFORMATION,
+                                                    "Failed to create new car",
+                                                    "Make sure all the details are filled in"
+                                                )
+                                            }
+                                        }
+
+                                    }
+                                }
+
+                            }
+                        }
+                        fieldset("Update Car") {
+                            hbox(20) {
+                                vbox {
+                                    field("Car UID") { updateCarUID = textfield() }
+                                    field("New Car Number") { updateCarNo = textfield() }
+                                    field("New Driver Name") { updateDriverName = textfield() }
+                                    field("New Navigator Name") { updateNavigatorName = textfield() }
+                                    buttonbar {
+                                        button("Update") {
+                                            action {
+                                                val newCarModel = Car(
+                                                    updateCarUID.text,
+                                                    updateCarNo.text,
+                                                    updateDriverName.text,
+                                                    updateNavigatorName.text
+                                                )
+                                                if (carController.update(newCarModel)) {
+                                                    refreshTextArea()
+                                                    alert(
+                                                        Alert.AlertType.CONFIRMATION,
+                                                        "Success",
+                                                        "Car has been deleted"
+                                                    )
+                                                } else {
+                                                    alert(
+                                                        Alert.AlertType.INFORMATION,
+                                                        "Failed to update car",
+                                                        "Make sure all the details are filled in"
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
 
                                 }
                             }
-
-                        }
-                    }
-                    fieldset("Update Car") {
-                        hbox(20) {
-                            vbox {
-                                field("Car UID") { updateCarUID = textfield() }
-                                field("New Car Number") { updateCarNo = textfield() }
-                                field("New Driver Name") { updateDriverName = textfield() }
-                                field("New Navigator Name") { updateNavigatorName = textfield() }
-                                buttonbar {
-                                    button("Update") {
-                                        action {
-                                            val newCarModel = Car(
-                                                updateCarUID.text,
-                                                updateCarNo.text,
-                                                updateDriverName.text,
-                                                updateNavigatorName.text
-                                            )
-                                            carController.update(newCarModel)
-                                            refreshTextArea()
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                    fieldset("Delete Car") {
-                        hbox(20) {
-                            vbox {
-                                field("Car UID") { deleteCarUID = textfield() }
-                                buttonbar {
-                                    button("Delete") {
-                                        action {
-                                            val newCarModel = Car(deleteCarUID.text, "", "", "")
-                                            carController.delete(newCarModel)
-                                            refreshTextArea()
+                            fieldset("Delete Car") {
+                                hbox(20) {
+                                    vbox {
+                                        field("Car UID") { deleteCarUID = textfield() }
+                                        buttonbar {
+                                            button("Delete") {
+                                                action {
+                                                    val newCarModel = Car(deleteCarUID.text, "", "", "")
+                                                    if (carController.delete(newCarModel)) {
+                                                        refreshTextArea()
+                                                        alert(
+                                                            Alert.AlertType.CONFIRMATION,
+                                                            "Success",
+                                                            "Car has been deleted"
+                                                        )
+                                                    } else {
+                                                        alert(
+                                                            Alert.AlertType.INFORMATION,
+                                                            "Failed to delete car",
+                                                            "Make sure the correct UID is supplied"
+                                                        )
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }

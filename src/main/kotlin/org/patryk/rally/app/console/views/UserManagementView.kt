@@ -6,6 +6,7 @@ import org.patryk.rally.app.console.controllers.UserController
 import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
 import org.patryk.rally.app.console.models.*
 import tornadofx.*
+import javax.swing.text.Style
 
 class UserManagementView : View("User Management View") {
     private var oldPassword: PasswordField = PasswordField()
@@ -77,6 +78,25 @@ class UserManagementView : View("User Management View") {
                                         userController.delete(newUser)
                                     }
                                 }
+                            }
+                        }
+                    }
+                    vbox(20) {
+                        buttonbar {
+                            button("Log Out") {
+                                action {
+                                    thisUser.username = ""
+                                    thisUser.password = ""
+                                    thisUser.admin = 0
+                                    find(UserManagementView::class).replaceWith(
+                                        LoginView::class,
+                                        sizeToScene = true,
+                                        centerOnScreen = true
+                                    )
+                                }
+                            }
+                            style {
+                                padding = box(10.px)
                             }
                         }
                     }
