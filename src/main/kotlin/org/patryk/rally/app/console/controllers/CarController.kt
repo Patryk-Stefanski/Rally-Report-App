@@ -136,7 +136,7 @@ class CarController {
         }
 
         if (car.navigatorName.isEmpty() && car.driverName.isEmpty() && car.carNo.isEmpty()){
-            logger.info { "No fields were entered" }
+            logger.info { "All fields are empty" }
             return false
         }
 
