@@ -31,6 +31,19 @@ class LoginView : View("Login") {
                                             0
                                         )
                                         if (userController.login(newUser)) {
+                                            if (thisUser.admin == 0){
+                                                find(LoginView::class).replaceWith(
+                                                    MainView::class,
+                                                    sizeToScene = true,
+                                                    centerOnScreen = true
+                                                )
+                                            } else {
+                                                find(LoginView::class).replaceWith(
+                                                    AdminMainView::class,
+                                                    sizeToScene = true,
+                                                    centerOnScreen = true
+                                                )
+                                            }
                                             loginUsername.text = ""
                                             loginPassword.text = ""
                                         } else {
@@ -38,20 +51,6 @@ class LoginView : View("Login") {
                                                 Alert.AlertType.INFORMATION,
                                                 "Incorrect Password",
                                                 "Username and password combination is incorrect"
-                                            )
-                                        }
-
-                                        if (thisUser.admin == 0){
-                                            find(LoginView::class).replaceWith(
-                                                MainView::class,
-                                                sizeToScene = true,
-                                                centerOnScreen = true
-                                            )
-                                        } else {
-                                            find(LoginView::class).replaceWith(
-                                                AdminMainView::class,
-                                                sizeToScene = true,
-                                                centerOnScreen = true
                                             )
                                         }
                                     }
