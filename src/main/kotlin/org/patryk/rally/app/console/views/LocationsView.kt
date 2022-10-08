@@ -1,4 +1,6 @@
 package org.patryk.rally.app.console.views
+import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
+
 
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
@@ -33,9 +35,15 @@ class LocationsView : View("Location View") {
                 buttonbar {
                     button("Return to Main Menu") {
                         action {
-                            find(LocationsView::class).replaceWith(
-                                MainView::class, sizeToScene = true, centerOnScreen = true
-                            )
+                            if (thisUser.admin == 0) {
+                                find(LocationsView::class).replaceWith(
+                                    MainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            } else {
+                                find(LocationsView::class).replaceWith(
+                                    AdminMainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            }
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package org.patryk.rally.app.console.views
 
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
 import javafx.scene.control.PasswordField
 import org.patryk.rally.app.console.controllers.UserController
 import org.patryk.rally.app.console.controllers.UserController.Companion.thisUser
@@ -23,11 +24,15 @@ class UserManagementView : View("User Management View") {
                 buttonbar {
                     button("Return to Main Menu") {
                         action {
-                            find(UserManagementView::class).replaceWith(
-                                MainView::class,
-                                sizeToScene = true,
-                                centerOnScreen = true
-                            )
+                            if (thisUser.admin == 0) {
+                                find(UserManagementView::class).replaceWith(
+                                    MainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            } else {
+                                find(UserManagementView::class).replaceWith(
+                                    AdminMainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            }
                         }
                     }
                 }
@@ -47,10 +52,19 @@ class UserManagementView : View("User Management View") {
                                         }
                                         val newUser = User(
                                             thisUser.username,
-                                            newPassword.text,
+                                            oldPassword.text,
                                             0
                                         )
-                                        userController.update(newUser)
+                                        if ( userController.update(newUser , newPassword.text)) {
+                                            alert(Alert.AlertType.CONFIRMATION, "Success", "User has been updated")
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Failed to update user",
+                                                "Make sure the correct password was entered and that  new ones match"
+                                            )
+                                        }
+
                                     }
                                 }
 
@@ -75,8 +89,24 @@ class UserManagementView : View("User Management View") {
                                             deletePassword.text,
                                             0
                                         )
-                                        userController.delete(newUser)
+                                        if ( userController.delete(newUser)) {
+                                            alert(Alert.AlertType.CONFIRMATION, "Success", "User has been deleted")
+                                            find(UserManagementView::class).replaceWith(
+                                                LoginView::class,
+                                                sizeToScene = true,
+                                                centerOnScreen = true
+                                            )
+                                        } else {
+                                            alert(
+                                                Alert.AlertType.INFORMATION,
+                                                "Failed to delete user",
+                                                "Make sure the correct password was entered and that it matches"
+                                            )
+                                        }
                                     }
+
+
+
                                 }
                             }
                         }
