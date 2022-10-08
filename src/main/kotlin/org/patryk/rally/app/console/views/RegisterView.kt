@@ -22,7 +22,7 @@ class RegisterView : View("Register User") {
                     button("Return to Login") {
                         action {
                             find(RegisterView::class).replaceWith(
-                                MainView::class,
+                                LoginView::class,
                                 sizeToScene = true,
                                 centerOnScreen = true
                             )

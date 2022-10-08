@@ -119,16 +119,21 @@ class UserController {
     }
 
 
-    fun update(user: User): Boolean {
+    fun update(user: User , newpassword : String): Boolean {
         var conn: Connection? = null
         var stmt: Statement? = null
 
-        if (user.password.isEmpty()) {
+        if (thisUser.password != user.password){
+            logger.info { "Failed to authenticate password" }
+            return  false
+        }
+
+        if (newpassword.isEmpty()) {
             logger.info { "Password field is empty , failed to update user" }
             return false
         }
 
-        if (user.password == "NoMatch") {
+        if (newpassword == "NoMatch") {
             logger.info { "Passwords don't match , failed to update user" }
             return false
         }
@@ -138,7 +143,7 @@ class UserController {
             if (conn != null) {
                 stmt = conn.createStatement()
             }
-            stmt!!.executeUpdate("UPDATE Users SET password = '${user.password}' where username = '${user.username}'")
+            stmt!!.executeUpdate("UPDATE Users SET password = '${newpassword}' where username = '${user.username}'")
         } catch (ex: SQLException) {
             ex.printStackTrace()
             return false
@@ -156,7 +161,7 @@ class UserController {
                 }
             }
         }
-        thisUser.password = user.password
+        thisUser.password = newpassword
         return true
     }
 

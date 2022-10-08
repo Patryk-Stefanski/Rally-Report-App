@@ -44,11 +44,15 @@ class PostView : View("Post View") {
                 buttonbar {
                     button("Return to Main Menu") {
                         action {
-                            find(PostView::class).replaceWith(
-                                MainView::class,
-                                sizeToScene = true,
-                                centerOnScreen = true
-                            )
+                            if (thisUser.admin == 0) {
+                                find(PostView::class).replaceWith(
+                                    MainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            } else {
+                                find(PostView::class).replaceWith(
+                                    AdminMainView::class, sizeToScene = true, centerOnScreen = true
+                                )
+                            }
                         }
 
                     }
@@ -59,7 +63,7 @@ class PostView : View("Post View") {
                             chosenCar.items.setAll(carController.list())
                             chosenLocation.items.setAll(locationController.list())
                             chosenCarUpdate.items.setAll(carController.list())
-                            chosenCarUpdate.items.setAll(locationController.list())
+                            chosenLocationUpdate.items.setAll(locationController.list())
                         }
 
                     }
@@ -69,7 +73,7 @@ class PostView : View("Post View") {
                 listOfPosts = textarea {
                     val postList = postController.list().toString()
                     text = postList.substring(1, postList.length - 1)
-                    prefRowCount = 5
+                    prefRowCount = 10
                     vgrow = Priority.ALWAYS
                 }
                 hbox(20) {

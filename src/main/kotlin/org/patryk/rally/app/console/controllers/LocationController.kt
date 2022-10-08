@@ -114,7 +114,7 @@ class LocationController {
         var rs: ResultSet?
         var foundUID = false
 
-        var updateQuery: String = "UPDATE Locations SET"
+        var updateQuery = "UPDATE `Locations` SET"
 
 
         if (location.stage.isNotEmpty()) {
@@ -126,6 +126,11 @@ class LocationController {
 
         if (location.corner.isNotEmpty()) {
             updateQuery += " corner = '${location.corner}' "
+        }
+
+        if (location.corner.isEmpty() && location.stage.isEmpty()){
+            logger.info { "All fields are empty" }
+            return  false
         }
 
 
@@ -172,7 +177,7 @@ class LocationController {
                 }
             }
         }
-        return false
+        return true
     }
 
     fun delete(location: Location): Boolean {

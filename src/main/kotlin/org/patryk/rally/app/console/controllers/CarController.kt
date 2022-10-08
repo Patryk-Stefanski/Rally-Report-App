@@ -135,6 +135,11 @@ class CarController {
             updateQuery += " navigatorName = '${car.navigatorName}' "
         }
 
+        if (car.navigatorName.isEmpty() && car.driverName.isEmpty() && car.carNo.isEmpty()){
+            logger.info { "All fields are empty" }
+            return false
+        }
+
         if (car.uid.isEmpty()) {
             logger.info { "Cannot update Car details because UID is empty" }
             return false
